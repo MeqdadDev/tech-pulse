@@ -26,7 +26,11 @@ EXTERNAL = 'target="_blank" rel="noopener"'
 
 
 def inline(text):
-    return re.sub(r"`([^`]+)`", r"<code>\1</code>", escape(text))
+    """Escape text, then allow `code`, **bold** and http(s) links."""
+    html = re.sub(r"`([^`]+)`", r"<code>\1</code>", escape(text))
+    html = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", html)
+    return re.sub(r"\[([^\]]+)\]\((https?://[^\s()]+(?:\([^\s()]*\)[^\s()]*)*)\)",
+                  rf'<a href="\2" {EXTERNAL}>\1</a>', html)
 
 
 def load_issues(issues_dir):

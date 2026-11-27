@@ -88,6 +88,14 @@ class Build(unittest.TestCase):
             self.assertIn(text, html)
         self.assertNotIn("Purpose", html)
 
+    def test_inline_links_and_bold_in_text(self):
+        text = "See [BBC](https://example.com/b?x=1&y=2) and **check yours**. [bad](javascript:alert(1))"
+        self.run_build(("2026-11-27.md", issue("NOV 25 – 27, 2026", text=text)))
+        html = self.page("index.html")
+        self.assertIn('<a href="https://example.com/b?x=1&amp;y=2" target="_blank" rel="noopener">BBC</a>', html)
+        self.assertIn("<strong>check yours</strong>", html)
+        self.assertNotIn('href="javascript', html)
+
     def test_empty_or_bad_input_fails(self):
         for files in ((), (("latest.md", NOV27[1]),), (("2026-11-27.md", "oops"),)):
             with self.subTest(files=files):
