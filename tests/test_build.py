@@ -71,7 +71,7 @@ class Build(unittest.TestCase):
             "NOV 25 – 27, 2026", headline=bad, summary=bad, text=f"{bad} and `a<b`", note=f"Quiet {bad}",
             url='https://example.com/"onmouseover="x')))
         html = self.page("index.html")
-        self.assertNotIn("<script", html)
+        self.assertNotIn("<script>x", html)
         self.assertEqual(html.count("&lt;script&gt;"), 4)
         self.assertIn("<code>a&lt;b</code>", html)
         self.assertNotIn('"onmouseover="', html)
@@ -87,6 +87,54 @@ class Build(unittest.TestCase):
                      'rel="noopener"'):
             self.assertIn(text, html)
         self.assertNotIn("Purpose", html)
+
+    def test_portfolio_link_in_header_and_footer(self):
+        self.run_build(NOV27)
+        html = self.page("index.html")
+        header, footer = html.split("<main>")[0], html.split("</main>")[1]
+        for part in (header, footer):
+            self.assertIn('href="https://meqdaddev.github.io/"', part)
+
+    def test_footer_credits_ai_help(self):
+        self.run_build(NOV27)
+        html = self.page("index.html")
+        self.assertIn("Researched and written with AI help. Published by Meqdad Darwish.", html)
+        self.assertNotIn("Written by Meqdad Darwish", html)
+
+    def test_portfolio_button_label(self):
+        self.run_build(NOV27)
+        self.assertIn('<a class="button portfolio" href="https://meqdaddev.github.io/">Who am I?</a>',
+                      self.page("index.html"))
+
+    def test_theme_switch(self):
+        self.run_build(NOV27, DEC01)
+        for page in ("index.html", "2026/11.html"):
+            html = self.page(page)
+            self.assertIn('id="theme-toggle"', html)
+            head = html.split("</head>")[0]
+            self.assertIn("localStorage.getItem", head)  # applied before first paint
+            self.assertIn("data-theme", head)
+            self.assertIn("localStorage.setItem", html)
+
+    def test_month_cards(self):
+        self.run_build(NOV25, NOV27, DEC01)
+        html = self.page("2026/11.html")
+        cards = dict((name, (attrs, body)) for attrs, name, body in re.findall(
+            r'<a class="month-card"([^>]*)>\s*<span class="month-name">([^<]+)</span>(.*?)</a>', html, re.S))
+        self.assertEqual(list(cards), ["December", "November"])
+        attrs, body = cards["November"]
+        self.assertIn('aria-current="page"', attrs)
+        self.assertNotIn("aria-current", cards["December"][0])
+        self.assertIn("2 issues, 2 stories", body)
+        self.assertIn("1 issue, 1 story", cards["December"][1])
+        self.assertEqual(body.count("<i style="), 2)  # one pulse bar per issue
+
+    def test_each_category_has_its_own_class(self):
+        text = NOV27[1].replace("---", "## Software / Dev Tools\n\n- **[S](https://example.com/s)** — T.\n\n---")
+        self.run_build(("2026-11-27.md", text))
+        html = self.page("index.html")
+        self.assertIn('class="category cat-ai"', html)
+        self.assertIn('class="category cat-software"', html)
 
     def test_inline_links_and_bold_in_text(self):
         text = "See [BBC](https://example.com/b?x=1&y=2) and **check yours**. [bad](javascript:alert(1))"
