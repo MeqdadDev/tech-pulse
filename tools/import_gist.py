@@ -64,7 +64,7 @@ def convert_gist(markdown, skip=()):
         heading = ISSUE_HEADING.match(line)
         if heading:
             found.append((heading.group(1), []))
-        elif line and found:
+        elif line and found and not line.startswith("<!--"):
             found[-1][1].append(line)
     result = {}
     for position, (date_range, lines) in enumerate(found):

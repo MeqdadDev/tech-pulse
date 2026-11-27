@@ -68,7 +68,7 @@ class Build(unittest.TestCase):
     def test_escapes_html(self):
         bad = "<script>x</script>"
         self.run_build(("2026-11-27.md", issue(
-            "NOV 25 – 27, 2026", headline=bad, summary=bad, text=f"{bad} and `a<b`", note=bad,
+            "NOV 25 – 27, 2026", headline=bad, summary=bad, text=f"{bad} and `a<b`", note=f"Quiet {bad}",
             url='https://example.com/"onmouseover="x')))
         html = self.page("index.html")
         self.assertNotIn("<script", html)
@@ -95,6 +95,12 @@ class Build(unittest.TestCase):
         self.assertIn('<a href="https://example.com/b?x=1&amp;y=2" target="_blank" rel="noopener">BBC</a>', html)
         self.assertIn("<strong>check yours</strong>", html)
         self.assertNotIn('href="javascript', html)
+
+    def test_misnamed_issue_file_fails(self):
+        for name in ("2026-11-29.markdown", "2026-11-29.txt", "2026-11-29.MD", "2026-11-29"):
+            with self.subTest(name=name):
+                with self.assertRaisesRegex(ValueError, "2026-11-29"):
+                    self.run_build(NOV27, (name, NOV25[1]))
 
     def test_empty_or_bad_input_fails(self):
         for files in ((), (("latest.md", NOV27[1]),), (("2026-11-27.md", "oops"),)):

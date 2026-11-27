@@ -10,6 +10,10 @@ MONTHS = ("JAN", "FEB", "MAR", "APR", "MAY", "JUN",
 HEADING = re.compile(r"^# TECH PULSE — (.+, (\d{4}))$", re.IGNORECASE)
 ITEM = re.compile(r"^- \*\*\[(.+?)\]\((\S+)\)\*\* — (\S.*)$")
 
+# Lines shaped like a list, a story, a heading or HTML must never pass as a quiet-category note.
+# A single *italic* wrapper is still a note.
+NOT_A_NOTE = re.compile(r"^(?:[-+*] |\d+[.)] |\*\*|\[.*\]\(|#|>|---|<)")
+
 
 class IssueError(ValueError):
     pass
@@ -97,7 +101,7 @@ def parse_issue(markdown, date):
             if not re.match(r"https?://", url, re.IGNORECASE):
                 _fail(number, "links must start with http:// or https://")
             sections[-1].items.append(Item(title, url, text))
-        elif line.startswith(("- ", "**[", "#", ">", "---")):
+        elif NOT_A_NOTE.match(line):
             _fail(number, "not a valid item: use '- **[Headline](https://...)** — text' on one line")
         else:
             sections[-1].notes.append(line)

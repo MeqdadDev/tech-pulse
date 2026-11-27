@@ -65,6 +65,13 @@ class ParseIssue(unittest.TestCase):
     def test_rejects_text_after_final_rule(self):
         self.reject(SAMPLE + "\nmore text\n")
 
+    def test_rejects_item_shaped_and_html_lines(self):
+        for line in ("* **[H](https://example.com/b)** — t", "+ [H](https://example.com/b) — t",
+                     "1. **[H](https://example.com/b)** — t", "2) story", "**Headline** — t",
+                     "[H](https://example.com/b) — t", "<!-- APPEND-POINT: new entries go here -->"):
+            with self.subTest(line=line):
+                self.reject(SAMPLE.replace(ITEM, f"{ITEM}\n\n{line}"))
+
     def test_url_with_parentheses(self):
         issue = parse_issue(SAMPLE.replace("/a)", "/a_(b))"), DATE)
         self.assertEqual(issue.sections[0].items[0].url, "https://example.com/a_(b)")

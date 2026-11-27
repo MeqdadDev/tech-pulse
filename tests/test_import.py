@@ -49,6 +49,12 @@ class Gist(unittest.TestCase):
                 self.assertEqual(issue.sections[0].name, "Software / Dev Tools")
                 self.assertNotIn("running log", converted)
 
+    def test_html_comments_are_dropped(self):
+        body = f"- {LINK} — Text.\n\n<!-- APPEND-POINT: new entries go here -->"
+        _, converted, issue = only(gist(body))
+        self.assertNotIn("APPEND-POINT", converted)
+        self.assertEqual(issue.sections[0].notes, [])
+
     def test_duplicate_date_stops(self):
         one = gist(f"- {LINK} — Text.")
         with self.assertRaisesRegex(ValueError, "2026-11-25"):

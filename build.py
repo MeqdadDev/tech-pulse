@@ -35,7 +35,7 @@ def inline(text):
 
 def load_issues(issues_dir):
     issues = []
-    for path in sorted(Path(issues_dir).glob("*.md")):
+    for path in sorted(Path(issues_dir).iterdir()):
         try:
             if not re.fullmatch(r"\d{4}-\d{2}-\d{2}\.md", path.name):
                 raise IssueError("the file name must be YYYY-MM-DD.md")
