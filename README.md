@@ -1,7 +1,7 @@
 # Tech Pulse
 
 AI, robotics, software, startups and hardware, in plain language, every two days.
-By Meqdad Darwish.
+Researched and written with AI help. Published by Meqdad Darwish.
 
 Each issue is one file, `issues/YYYY-MM-DD.md`. Pushing it to `main` rebuilds and
 publishes the site: one page per month, newest issue first. If a test or the build
